@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"rootDirs": [
+			"src",
+			"examples"
+		],
+		"outDir": "dist",
+		"target": "es6",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"strict": true,
+		"types": [
+			"node"
+		],
+		"sourceMap": true,
+		"declaration": true
+	},
+	"include": [
+		"src",
+		"examples"
+	]
+}
