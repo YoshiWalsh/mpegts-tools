@@ -7,5 +7,7 @@ export {
 	IAdaptationExtension,
 	PacketData,
 	AdaptationField,
-	AdaptationExtension
+	AdaptationExtension,
+	MPEGTS_PACKET_LENGTH,
+	MPEGTS_SYNC_BYTE
 } from './Packets';
