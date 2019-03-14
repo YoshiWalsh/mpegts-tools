@@ -7,7 +7,7 @@ import { MPEGTS_PACKET_LENGTH, MPEGTS_SYNC_BYTE } from './Packets';
  * This makes it simple to parse and perform operations on the packets.
  */
 export class PacketAligner extends Transform {
-	private buffer: Buffer = Buffer.alloc(0, undefined, "binary");
+	private buffer: Buffer = Buffer.alloc(0, undefined);
 	private syncAcquired = false;
 
 	public constructor() {
@@ -18,7 +18,7 @@ export class PacketAligner extends Transform {
 		try {
 			this.buffer = Buffer.concat([this.buffer, chunk]);
 			if(!this.syncAcquired) {
-				const syncByteIndex = this.buffer.indexOf(MPEGTS_SYNC_BYTE, 0, "binary");
+				const syncByteIndex = this.buffer.indexOf(MPEGTS_SYNC_BYTE, 0);
 				this.buffer = this.buffer.slice(syncByteIndex >= 0 ? syncByteIndex : this.buffer.length);
 				while(this.buffer.length > MPEGTS_PACKET_LENGTH * 2 + 1) {
 					// Search for 3 properly-spaced sync bytes in a row
@@ -31,7 +31,7 @@ export class PacketAligner extends Transform {
 						break;
 					}
 					
-					const syncByteIndex = this.buffer.indexOf(MPEGTS_SYNC_BYTE, 1, "binary");
+					const syncByteIndex = this.buffer.indexOf(MPEGTS_SYNC_BYTE, 1);
 					this.buffer = this.buffer.slice(syncByteIndex >= 0 ? syncByteIndex : this.buffer.length);
 				}
 			}
