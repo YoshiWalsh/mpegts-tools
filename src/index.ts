@@ -1,4 +1,5 @@
 export { PacketAligner } from './PacketAligner';
+export { StreamChunker as StreamChunker } from './StreamChunker';
 export {
 	TransportScramblingControlValues,
 	AdaptationFieldControlValues,
