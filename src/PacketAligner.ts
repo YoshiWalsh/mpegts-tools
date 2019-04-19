@@ -102,18 +102,24 @@ export class PacketAligner extends Transform {
 					this.appendToLeftovers(chunk, 1);
 					chunk = this.emptyBuffer;
 				} else {
-					if(this.getByteFromLeftoversAndChunk(chunk, MPEGTS_PACKET_LENGTH) === MPEGTS_SYNC_BYTE) {
-						if(this.leftoversEnd > 0) {
-							output.push(this.leftovers.slice(0, Math.min(this.leftoversEnd, MPEGTS_PACKET_LENGTH)));
+					let packetsFound = 0;
+					for (let currentIndex = MPEGTS_PACKET_LENGTH; currentIndex < this.leftoversEnd + chunk.length; currentIndex += MPEGTS_PACKET_LENGTH) {
+						if(this.getByteFromLeftoversAndChunk(chunk, currentIndex) === MPEGTS_SYNC_BYTE) {
+							packetsFound++;
+						} else {
+							this.syncAcquired = false;
+							break;
 						}
-						if(MPEGTS_PACKET_LENGTH > this.leftoversEnd) {
-							output.push(chunk.slice(0, MPEGTS_PACKET_LENGTH - this.leftoversEnd));
-						}
-						chunk = this.shiftLeftoversAndChunk(chunk, MPEGTS_PACKET_LENGTH);
-					} else {
-						this.syncAcquired = false;
-						continue;
 					}
+
+					let foundPacketsLength = packetsFound * MPEGTS_PACKET_LENGTH;
+					if(packetsFound > 0 && this.leftoversEnd > 0) {
+						output.push(this.leftovers.slice(0, this.leftoversEnd));
+					}
+					if(foundPacketsLength > this.leftoversEnd) {
+						output.push(chunk.slice(0, foundPacketsLength - this.leftoversEnd));
+					}
+					chunk = this.shiftLeftoversAndChunk(chunk, foundPacketsLength);
 				}
 			}
 			this.appendToLeftovers(chunk);
