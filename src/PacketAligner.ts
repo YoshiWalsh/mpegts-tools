@@ -121,11 +121,12 @@ export class PacketAligner extends Transform {
 					}
 					chunk = this.shiftLeftoversAndChunk(chunk, foundPacketsLength);
 				}
+				if(output.length > 0) {
+					this.push(Buffer.concat(output));
+					output = [];
+				}
 			}
 			this.appendToLeftovers(chunk);
-			if(output.length > 0) {
-				this.push(Buffer.concat(output));
-			}
 			callback(null);
 		} catch (ex) {
 			callback(ex);
