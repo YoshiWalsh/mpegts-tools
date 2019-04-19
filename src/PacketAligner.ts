@@ -1,6 +1,5 @@
 import { Transform, TransformCallback } from 'stream';
 import { MPEGTS_PACKET_LENGTH, MPEGTS_SYNC_BYTE } from './Packets';
-import { timingSafeEqual } from 'crypto';
 
 /**
  * This transformer takes an MPEG Transport Stream and aligns it so that each chunk will always start at the beginning of a packet, and will contain an integer amount of packets.
@@ -84,7 +83,6 @@ export class PacketAligner extends Transform {
 
 	public _transform(chunk: Buffer, encoding: BufferEncoding, callback: TransformCallback) {
 		try {
-			let output = [];
 			while (this.leftoversEnd + chunk.length > (this.syncAcquired ? MPEGTS_PACKET_LENGTH : (MPEGTS_PACKET_LENGTH * 2 + 1))) {
 				if(!this.syncAcquired) {
 					const syncByteIndex = this.indexOfLeftoversAndChunk(chunk, MPEGTS_SYNC_BYTE, 0);
@@ -102,6 +100,7 @@ export class PacketAligner extends Transform {
 					this.appendToLeftovers(chunk, 1);
 					chunk = this.emptyBuffer;
 				} else {
+					const output = [];
 					let packetsFound = 0;
 					for (let currentIndex = MPEGTS_PACKET_LENGTH; currentIndex < this.leftoversEnd + chunk.length; currentIndex += MPEGTS_PACKET_LENGTH) {
 						if(this.getByteFromLeftoversAndChunk(chunk, currentIndex) === MPEGTS_SYNC_BYTE) {
@@ -112,18 +111,20 @@ export class PacketAligner extends Transform {
 						}
 					}
 
-					let foundPacketsLength = packetsFound * MPEGTS_PACKET_LENGTH;
+					const foundPacketsLength = packetsFound * MPEGTS_PACKET_LENGTH;
+					let packetDataContainedWithinLeftovers = 0;
 					if(packetsFound > 0 && this.leftoversEnd > 0) {
-						output.push(this.leftovers.slice(0, this.leftoversEnd));
+						packetDataContainedWithinLeftovers = Math.min(packetsFound, Math.floor(this.leftoversMaxLength / MPEGTS_PACKET_LENGTH)) * MPEGTS_PACKET_LENGTH;
+						chunk.copy(this.leftovers, this.leftoversEnd, 0, packetDataContainedWithinLeftovers - this.leftoversEnd);
+						output.push(this.leftovers.slice(0, packetDataContainedWithinLeftovers));
 					}
-					if(foundPacketsLength > this.leftoversEnd) {
-						output.push(chunk.slice(0, foundPacketsLength - this.leftoversEnd));
+					if(foundPacketsLength > packetDataContainedWithinLeftovers) {
+						output.push(chunk.slice(packetDataContainedWithinLeftovers - this.leftoversEnd, foundPacketsLength - packetDataContainedWithinLeftovers));
+					}
+					for(let i = 0; i < output.length; i++) {
+						this.push(output[i]);
 					}
 					chunk = this.shiftLeftoversAndChunk(chunk, foundPacketsLength);
-				}
-				if(output.length > 0) {
-					this.push(Buffer.concat(output));
-					output = [];
 				}
 			}
 			this.appendToLeftovers(chunk);
