@@ -16,6 +16,19 @@
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			]
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Benchmark PacketData reading",
+			"program": "${workspaceFolder}\\benchmarking\\PacketDataReading.ts",
+			"args": [
+				"${workspaceFolder}\\test.mts"
+			],
+			"preLaunchTask": "tsc: build - tsconfig.json",
+			"outFiles": [
+				"${workspaceFolder}/dist/**/*.js"
+			]
 		}
 	]
 }
