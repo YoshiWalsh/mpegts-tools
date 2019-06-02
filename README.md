@@ -1,4 +1,6 @@
-## mpegts-tools
+# mpegts-tools
+
+[![](https://img.shields.io/npm/v/mpegts-tools.svg?style=flat)](https://npmjs.com/package/mpegts-tools)
 
 This project aims to provide tools for reading and manipulating MPEG Transport Streams in Node.js.
 
